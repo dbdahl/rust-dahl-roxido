@@ -1,6 +1,6 @@
 [package]
 name = "dahl-roxido"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["David B. Dahl <dahl@stat.byu.edu>"]
 edition = "2018"
 description = "Utility function when interfacing R and Rust."
