@@ -1,12 +1,12 @@
 [package]
 name = "dahl-roxido"
-version = "0.3.3"
+version = "0.4.0"
 authors = ["David B. Dahl <dahl@stat.byu.edu>"]
 edition = "2018"
-description = "Utility function when interfacing R and Rust."
+description = "R packaged based on Rust"
 homepage = "https://dahl.byu.edu"
 license = "MIT OR Apache-2.0"
 
 [dependencies]
-rand = "0.8.3"
-rand_isaac = "0.3.0"
+libR-sys = "0.2.1"
+rand_pcg = "0.3.0"
