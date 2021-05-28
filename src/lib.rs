@@ -5,7 +5,6 @@ use libR_sys::*;
 
 pub use libR_sys;
 pub use libR_sys::SEXP;
-use std::ffi::{CStr, CString};
 use std::os::raw::{c_char, c_int};
 
 pub struct SEXPMethods;
@@ -30,18 +29,29 @@ impl SEXPMethods {
             bytes
         }
     }
-    // Make sure there is no embedded printf formatting, e.g., %s
-    pub unsafe fn print_string(x: String) {
-        let cx = CString::new(x).unwrap();
-        Self::print_cstr(&cx);
+    // Does not process the output (unlike Rprintf).
+    // Does not need to be NULL-terminated.
+    // Safe, but slightly slower than print_raw().
+    pub fn print_str(x: &str) {
+        unsafe {
+            let what =
+                Rf_ScalarString(Rf_mkCharLen(x.as_ptr() as *const i8, x.len() as i32)).protect();
+            let out = Rf_install(b"stdout\0".as_ptr() as *const i8)
+                .call0()
+                .protect();
+            Rf_install(b"writeLines\0".as_ptr() as *const i8).call4(
+                what,
+                out,
+                R_BlankScalarString,
+                Rf_ScalarLogical(1).protect(),
+            );
+            SEXPMethods::unprotect(3);
+        }
     }
-    // Make sure there is no embedded printf formatting, e.g., %s
-    pub unsafe fn print_cstr(x: &CStr) {
-        Rprintf(x.as_ptr());
-    }
-    // Make sure there is no embedded printf formatting, e.g., %s
-    // Make sure its NULL terminated.
-    pub unsafe fn print_raw(x: &[u8]) {
+    // Make sure there is no embedded printf formatting, e.g., %s.
+    // Make sure it's NULL terminated.
+    // Dangerous, but slightly faster than print_str().
+    pub unsafe fn print_raw(x: &str) {
         Rprintf(x.as_ptr() as *const c_char);
     }
     pub fn unprotect(i: i32) {
