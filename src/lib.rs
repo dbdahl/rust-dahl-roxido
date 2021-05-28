@@ -2,10 +2,11 @@
 
 // Help: https://docs.rs/libR-sys, https://github.com/hadley/r-internals
 use libR_sys::*;
-use std::os::raw::c_int;
 
 pub use libR_sys;
 pub use libR_sys::SEXP;
+use std::ffi::{CStr, CString};
+use std::os::raw::{c_char, c_int};
 
 pub struct SEXPMethods;
 
@@ -28,6 +29,20 @@ impl SEXPMethods {
             SEXPMethods::unprotect(3);
             bytes
         }
+    }
+    // Make sure there is no embedded printf formatting, e.g., %s
+    pub unsafe fn print_string(x: String) {
+        let cx = CString::new(x).unwrap();
+        Self::print_cstr(&cx);
+    }
+    // Make sure there is no embedded printf formatting, e.g., %s
+    pub unsafe fn print_cstr(x: &CStr) {
+        Rprintf(x.as_ptr());
+    }
+    // Make sure there is no embedded printf formatting, e.g., %s
+    // Make sure its NULL terminated.
+    pub unsafe fn print_raw(x: &[u8]) {
+        Rprintf(x.as_ptr() as *const c_char);
     }
     pub fn unprotect(i: i32) {
         unsafe { Rf_unprotect(i) }
