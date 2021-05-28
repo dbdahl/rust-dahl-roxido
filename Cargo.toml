@@ -9,4 +9,3 @@ license = "MIT OR Apache-2.0"
 
 [dependencies]
 libR-sys = "0.2.1"
-rand_pcg = "0.3.0"
