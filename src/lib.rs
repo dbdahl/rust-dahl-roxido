@@ -14,6 +14,7 @@ impl SEXPMethods {
     pub fn random_bytes_from_r<const LENGTH: usize>() -> [u8; LENGTH] {
         unsafe {
             let result = Rf_install(b"sample.int\0".as_ptr() as *const c_char)
+                .protect()
                 .call2(
                     SEXPMethods::integer((u8::MAX as c_int) + 1).protect(),
                     SEXPMethods::integer(LENGTH as c_int).protect(),
@@ -25,7 +26,7 @@ impl SEXPMethods {
                 .iter_mut()
                 .zip(slice)
                 .for_each(|(b, s)| *b = (*s - 1) as u8);
-            SEXPMethods::unprotect(3);
+            SEXPMethods::unprotect(4);
             bytes
         }
     }
