@@ -5,6 +5,7 @@ use libR_sys::*;
 
 pub use libR_sys;
 pub use libR_sys::SEXP;
+use std::convert::TryFrom;
 use std::os::raw::{c_char, c_int};
 
 pub struct SEXPMethods;
@@ -72,6 +73,7 @@ impl SEXPMethods {
 pub trait SEXPExt {
     fn protect(self) -> Self;
     fn as_integer(self) -> i32;
+    fn as_usize(self) -> usize;
     fn as_double(self) -> f64;
     fn as_logical(self) -> i32;
     fn as_bool(self) -> bool;
@@ -84,9 +86,13 @@ pub trait SEXPExt {
     fn as_raw_slice_mut(self) -> &'static mut [u8];
     fn as_raw_slice(self) -> &'static [u8];
     fn length(self) -> i32;
+    fn length_usize(self) -> usize;
     fn xlength(self) -> isize;
+    fn xlength_usize(self) -> usize;
     fn nrow(self) -> i32;
+    fn nrow_usize(self) -> usize;
     fn ncol(self) -> i32;
+    fn ncol_usize(self) -> usize;
     fn call0(self) -> SEXP;
     fn call1(self, x1: SEXP) -> SEXP;
     fn call2(self, x1: SEXP, x2: SEXP) -> SEXP;
@@ -108,6 +114,9 @@ impl SEXPExt for SEXP {
     fn as_integer(self) -> i32 {
         unsafe { Rf_asInteger(self) }
     }
+    fn as_usize(self) -> usize {
+        usize::try_from(unsafe { Rf_asInteger(self) }).unwrap()
+    }
     fn as_double(self) -> f64 {
         unsafe { Rf_asReal(self) }
     }
@@ -118,40 +127,52 @@ impl SEXPExt for SEXP {
         unsafe { Rf_asLogical(self) != 0 }
     }
     fn as_integer_slice_mut(self) -> &'static mut [i32] {
-        unsafe { std::slice::from_raw_parts_mut(INTEGER(self), self.xlength() as usize) }
+        unsafe { std::slice::from_raw_parts_mut(INTEGER(self), self.xlength_usize()) }
     }
     fn as_integer_slice(self) -> &'static [i32] {
-        unsafe { std::slice::from_raw_parts(INTEGER(self), self.xlength() as usize) }
+        unsafe { std::slice::from_raw_parts(INTEGER(self), self.xlength_usize()) }
     }
     fn as_double_slice_mut(self) -> &'static mut [f64] {
-        unsafe { std::slice::from_raw_parts_mut(REAL(self), self.xlength() as usize) }
+        unsafe { std::slice::from_raw_parts_mut(REAL(self), self.xlength_usize()) }
     }
     fn as_double_slice(self) -> &'static [f64] {
-        unsafe { std::slice::from_raw_parts(REAL(self), self.xlength() as usize) }
+        unsafe { std::slice::from_raw_parts(REAL(self), self.xlength_usize()) }
     }
     fn as_logical_slice_mut(self) -> &'static mut [i32] {
-        unsafe { std::slice::from_raw_parts_mut(LOGICAL(self), self.xlength() as usize) }
+        unsafe { std::slice::from_raw_parts_mut(LOGICAL(self), self.xlength_usize()) }
     }
     fn as_logical_slice(self) -> &'static [i32] {
-        unsafe { std::slice::from_raw_parts(LOGICAL(self), self.xlength() as usize) }
+        unsafe { std::slice::from_raw_parts(LOGICAL(self), self.xlength_usize()) }
     }
     fn as_raw_slice_mut(self) -> &'static mut [u8] {
-        unsafe { std::slice::from_raw_parts_mut(RAW(self), self.xlength() as usize) }
+        unsafe { std::slice::from_raw_parts_mut(RAW(self), self.xlength_usize()) }
     }
     fn as_raw_slice(self) -> &'static [u8] {
-        unsafe { std::slice::from_raw_parts(RAW(self), self.xlength() as usize) }
+        unsafe { std::slice::from_raw_parts(RAW(self), self.xlength_usize()) }
     }
     fn length(self) -> i32 {
         unsafe { Rf_length(self) }
     }
+    fn length_usize(self) -> usize {
+        usize::try_from(unsafe { Rf_length(self) }).unwrap()
+    }
     fn xlength(self) -> isize {
         unsafe { Rf_xlength(self) }
+    }
+    fn xlength_usize(self) -> usize {
+        usize::try_from(unsafe { Rf_xlength(self) }).unwrap()
     }
     fn nrow(self) -> i32 {
         unsafe { Rf_nrows(self) }
     }
+    fn nrow_usize(self) -> usize {
+        usize::try_from(unsafe { Rf_nrows(self) }).unwrap()
+    }
     fn ncol(self) -> i32 {
         unsafe { Rf_ncols(self) }
+    }
+    fn ncol_usize(self) -> usize {
+        usize::try_from(unsafe { Rf_ncols(self) }).unwrap()
     }
     fn call0(self) -> SEXP {
         unsafe {
