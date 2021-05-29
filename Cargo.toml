@@ -1,5 +1,5 @@
 [package]
-name = "roxido"
+name = "dahl-roxido"
 version = "0.4.0"
 authors = ["David B. Dahl <dahl@stat.byu.edu>"]
 edition = "2018"

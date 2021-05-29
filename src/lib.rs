@@ -13,10 +13,10 @@ impl SEXPMethods {
     // Use to seed a RNG from R.
     pub fn random_bytes_from_r<const LENGTH: usize>() -> [u8; LENGTH] {
         unsafe {
-            let result = Rf_install(b"sample.int\0".as_ptr() as *const i8)
+            let result = Rf_install(b"sample.int\0".as_ptr() as *const c_char)
                 .call2(
-                    SEXPMethods::integer((u8::MAX as i32) + 1).protect(),
-                    SEXPMethods::integer(LENGTH as i32).protect(),
+                    SEXPMethods::integer((u8::MAX as c_int) + 1).protect(),
+                    SEXPMethods::integer(LENGTH as c_int).protect(),
                 )
                 .protect();
             let slice = result.as_integer_slice();
@@ -29,30 +29,12 @@ impl SEXPMethods {
             bytes
         }
     }
-    // Does not process the output (unlike Rprintf).
-    // Does not need to be NULL-terminated.
-    // Safe, but slightly slower than print_raw().
-    pub fn print_str(x: &str) {
-        unsafe {
-            let what =
-                Rf_ScalarString(Rf_mkCharLen(x.as_ptr() as *const i8, x.len() as i32)).protect();
-            let out = Rf_install(b"stdout\0".as_ptr() as *const i8)
-                .call0()
-                .protect();
-            Rf_install(b"writeLines\0".as_ptr() as *const i8).call4(
-                what,
-                out,
-                R_BlankScalarString,
-                Rf_ScalarLogical(1).protect(),
-            );
-            SEXPMethods::unprotect(3);
-        }
-    }
-    // Make sure there is no embedded printf formatting, e.g., %s.
-    // Make sure it's NULL terminated.
-    // Dangerous, but slightly faster than print_str().
-    pub unsafe fn print_raw(x: &str) {
-        Rprintf(x.as_ptr() as *const c_char);
+    pub unsafe fn print_str(x: &str) {
+        Rprintf(
+            b"%.*s\0".as_ptr() as *const c_char,
+            x.len(),
+            x.as_ptr() as *const c_char,
+        );
     }
     pub fn unprotect(i: i32) {
         unsafe { Rf_unprotect(i) }
@@ -64,7 +46,7 @@ impl SEXPMethods {
         unsafe { Rf_ScalarReal(x) }
     }
     pub fn logical(x: bool) -> SEXP {
-        unsafe { Rf_ScalarLogical(x as i32) }
+        unsafe { Rf_ScalarLogical(x as c_int) }
     }
     pub fn integer_vector(xlength: isize) -> SEXP {
         unsafe { Rf_allocVector(INTSXP, xlength) }
