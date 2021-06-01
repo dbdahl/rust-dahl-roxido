@@ -3,7 +3,7 @@ name = "dahl-roxido"
 version = "0.4.0"
 authors = ["David B. Dahl <dahl@stat.byu.edu>"]
 edition = "2018"
-description = "Support for writing R packages based on Rust by leveraging the libR-sys crate"
+description = "Support for writing R packages based on Rust (using the libR-sys crate)"
 homepage = "https://dahl.byu.edu"
 license = "MIT OR Apache-2.0"
 
